@@ -1,5 +1,14 @@
 import { constructShader } from "./shader";
 
+const hexToRgb = (hex: string): Float32Array => {
+	const regex = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+	return new Float32Array([
+		(regex ? parseInt(regex[1], 16) : 255) / 255,
+		(regex ? parseInt(regex[2], 16) : 255) / 255,
+		(regex ? parseInt(regex[3], 16) : 255) / 255,
+	]);
+}
+
 const canvas = document.getElementsByTagName("canvas")[0];
 const gl = (canvas as HTMLCanvasElement).getContext("webgl2");
 gl.viewport(0, 0, canvas.width, canvas.height);
@@ -94,7 +103,8 @@ gl.enableVertexAttribArray(1);
 gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 4 * Float32Array.BYTES_PER_ELEMENT, 2 * Float32Array.BYTES_PER_ELEMENT);
 
 const bounds = canvas.getBoundingClientRect();
-shader.setUniform3fv("cursors[0].colour", new Float32Array([0.0, 1.0, 0.0]));
+const my_colour = hexToRgb(new URLSearchParams(window.location.search).get("colour") ?? "#FFFFFF");
+shader.setUniform3fv("cursors[0].colour", my_colour);
 shader.setUniform3fv("cursors[1].colour", new Float32Array([0.0, 0.0, 1.0]));
 shader.setUniform1i("cursor_count", 2);
 document.addEventListener("mousemove", ({ x, y }) => shader.setUniform2fv("cursors[0].position", new Float32Array([2.0 * (x/bounds.width) - 1.0, 1.0 - (y/bounds.height) * 2])));

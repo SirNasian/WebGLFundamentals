@@ -7,7 +7,20 @@ settings:
 importers:
 
   .:
+    dependencies:
+      mime-types:
+        specifier: ^2.1.35
+        version: 2.1.35
+      uuid:
+        specifier: ^11.1.0
+        version: 11.1.0
+      ws:
+        specifier: ^8.18.1
+        version: 8.18.1
     devDependencies:
+      '@types/mime-types':
+        specifier: ^2.1.4
+        version: 2.1.4
       '@types/node':
         specifier: ^22.13.10
         version: 22.13.10
@@ -20,18 +33,12 @@ importers:
       typescript:
         specifier: ^5.8.2
         version: 5.8.2
-      uuid:
-        specifier: ^11.1.0
-        version: 11.1.0
       webpack:
         specifier: ^5.98.0
         version: 5.98.0(webpack-cli@6.0.1)
       webpack-cli:
         specifier: ^6.0.1
         version: 6.0.1(webpack@5.98.0)
-      ws:
-        specifier: ^8.18.1
-        version: 8.18.1
 
 packages:
 
@@ -71,6 +78,9 @@ packages:
 
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
+
+  '@types/mime-types@2.1.4':
+    resolution: {integrity: sha512-lfU4b34HOri+kAY5UheuFMWPDOI+OPceBSHZKp69gEyTL/mmJ4cnU6Y/rlme3UL3GyOn6Y42hyIEw0/q8sWx5w==}
 
   '@types/node@22.13.10':
     resolution: {integrity: sha512-I6LPUvlRH+O6VRUqYOcMudhaIdUVWfsjnZavnsraHvpBwaEyMN29ry+0UVJhImYL16xsscu0aske3yA+uPOWfw==}
@@ -633,6 +643,8 @@ snapshots:
   '@types/estree@1.0.6': {}
 
   '@types/json-schema@7.0.15': {}
+
+  '@types/mime-types@2.1.4': {}
 
   '@types/node@22.13.10':
     dependencies:

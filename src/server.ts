@@ -34,7 +34,7 @@ const sockets: Record<string, WebSocket> = {};
 const server = new WebSocketServer({ port: WS_PORT });
 
 server.on("connection", (socket) => {
-	socket.on("open", () => {
+	{
 		const client_id = uuid();
 
 		const message: InitMessage = {
@@ -50,7 +50,7 @@ server.on("connection", (socket) => {
 
 		socket.send(JSON.stringify(message));
 		sockets[client_id] = socket;
-	});
+	}
 
 	socket.on("message", console.debug);
 });

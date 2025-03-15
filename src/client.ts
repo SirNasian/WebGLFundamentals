@@ -1,13 +1,31 @@
+import { Client } from "./common/types";
+import { hexToRgb } from "./common/utils";
+
+import { createConnection } from "./client/connection";
 import { constructShader } from "./client/shader";
 
-const hexToRgb = (hex: string): Float32Array => {
-	const regex = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-	return new Float32Array([
-		(regex ? parseInt(regex[1], 16) : 255) / 255,
-		(regex ? parseInt(regex[2], 16) : 255) / 255,
-		(regex ? parseInt(regex[3], 16) : 255) / 255,
-	]);
-}
+let _id = "";
+let _clients: Record<string, Client> = {};
+const _colour = new URLSearchParams(window.location.search).get("colour") ?? "#FFFFFF";
+
+document.addEventListener("mousemove", ({ x, y }) => {
+	if (_id)
+		_clients[_id] = {
+			id: _id,
+			position: {
+				x: 2.0 * (x/bounds.width) - 1.0,
+				y: 1.0 - (y/bounds.height) * 2,
+			},
+			colour: _colour,
+		};
+});
+
+createConnection(
+	"ws://localhost:3001",
+	({ id }) => { _id = id },
+	({ clients }) => clients.forEach((client) => (client.id !== _id) && (_clients[client.id] = client)),
+	({ id }) => delete _clients[id],
+);
 
 const canvas = document.getElementsByTagName("canvas")[0];
 const gl = (canvas as HTMLCanvasElement).getContext("webgl2");
@@ -103,15 +121,15 @@ gl.enableVertexAttribArray(1);
 gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 4 * Float32Array.BYTES_PER_ELEMENT, 2 * Float32Array.BYTES_PER_ELEMENT);
 
 const bounds = canvas.getBoundingClientRect();
-const my_colour = hexToRgb(new URLSearchParams(window.location.search).get("colour") ?? "#FFFFFF");
-shader.setUniform3fv("cursors[0].colour", my_colour);
-shader.setUniform3fv("cursors[1].colour", new Float32Array([0.0, 0.0, 1.0]));
-shader.setUniform1i("cursor_count", 2);
-document.addEventListener("mousemove", ({ x, y }) => shader.setUniform2fv("cursors[0].position", new Float32Array([2.0 * (x/bounds.width) - 1.0, 1.0 - (y/bounds.height) * 2])));
 shader.setUniform1i("wall_texture", 0);
 
 gl.clearColor(0.0, 0.0, 0.0, 1.0);
 const render = () => {
+	shader.setUniform1i("cursor_count", Object.keys(_clients).length);
+	Object.values(_clients).forEach((client, index) => {
+		shader.setUniform3fv(`cursors[${index}].colour`, hexToRgb(client.colour));
+		shader.setUniform2fv(`cursors[${index}].position`, new Float32Array([client.position.x, client.position.y]));
+	});
 	gl.clear(gl.COLOR_BUFFER_BIT);
 	gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 	window.requestAnimationFrame(render);

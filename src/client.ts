@@ -8,24 +8,30 @@ let _id = "";
 let _clients: Record<string, Client> = {};
 const _colour = new URLSearchParams(window.location.search).get("colour") ?? "#FFFFFF";
 
-document.addEventListener("mousemove", ({ x, y }) => {
-	if (_id)
-		_clients[_id] = {
-			id: _id,
-			position: {
-				x: 2.0 * (x/bounds.width) - 1.0,
-				y: 1.0 - (y/bounds.height) * 2,
-			},
-			colour: _colour,
-		};
-});
-
-createConnection(
+const connection = createConnection(
 	"ws://localhost:3001",
-	({ id }) => { _id = id },
+	({ id }) => (_id = id),
 	({ clients }) => clients.forEach((client) => (client.id !== _id) && (_clients[client.id] = client)),
 	({ id }) => delete _clients[id],
 );
+
+document.addEventListener("mousemove", ({ x, y }) => {
+	if (!_id) return;
+
+	_clients[_id] = {
+		id: _id,
+		position: {
+			x: 2.0 * (x/bounds.width) - 1.0,
+			y: 1.0 - (y/bounds.height) * 2,
+		},
+		colour: _colour,
+	};
+
+	connection.send({
+		type: "client-update",
+		..._clients[_id],
+	});
+});
 
 const canvas = document.getElementsByTagName("canvas")[0];
 const gl = (canvas as HTMLCanvasElement).getContext("webgl2");

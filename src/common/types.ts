@@ -13,10 +13,8 @@ export interface InitMessage extends Message {
 	id: string;
 }
 
-export interface ClientUpdateMessage extends Message {
+export interface ClientUpdateMessage extends Message, Client {
 	type: "client-update",
-	position: { x: number; y: number };
-	colour: string;
 }
 
 export interface ClientDisconnectMessage extends Message {

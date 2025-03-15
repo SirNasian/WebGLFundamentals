@@ -1,4 +1,4 @@
-import { constructShader } from "./shader";
+import { constructShader } from "./client/shader";
 
 const hexToRgb = (hex: string): Float32Array => {
 	const regex = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);

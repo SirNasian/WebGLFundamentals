@@ -9,7 +9,7 @@ let _clients: Record<string, Client> = {};
 const _colour = new URLSearchParams(window.location.search).get("colour") ?? "#FFFFFF";
 
 const connection = createConnection(
-	"ws://localhost:3001",
+	`ws://${window.location.hostname}:3001`,
 	({ id }) => (_id = id),
 	({ clients }) => clients.forEach((client) => (client.id !== _id) && (_clients[client.id] = client)),
 	({ id }) => delete _clients[id],

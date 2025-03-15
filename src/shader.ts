@@ -4,6 +4,7 @@ export interface Shader {
 	getUniformLocation: (name: string) => WebGLUniformLocation;
 	setUniform1i: (name: string, value: GLint) => void;
 	setUniform2fv: (name: string, value: Float32Array) => void;
+	setUniform3fv: (name: string, value: Float32Array) => void;
 }
 
 export const constructShader = (
@@ -34,6 +35,7 @@ export const constructShader = (
 		getUniformLocation,
 		setUniform1i: (name, value) => gl.uniform1i(getUniformLocation(name), value),
 		setUniform2fv: (name, value) => gl.uniform2fv(getUniformLocation(name), value),
+		setUniform3fv: (name, value) => gl.uniform3fv(getUniformLocation(name), value),
 	};
 }
 

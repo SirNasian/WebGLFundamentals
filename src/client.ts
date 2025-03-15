@@ -37,26 +37,39 @@ const shader = constructShader(
 	`,
 	`#version 300 es
 		precision mediump float;
+
+		struct Cursor {
+			vec2 position;
+			vec3 colour;
+		};
+
 		uniform sampler2D wall_texture;
-		uniform vec2 cursor_position;
+		uniform Cursor[256] cursors;
+		uniform int cursor_count;
+
 		in vec2 fragment_position;
 		in vec2 fragment_uv;
 		out vec4 fragment_colour;
+
 		void main() {
-			float intensity = 1.0 - length(fragment_position - cursor_position);
-			float red = texture(wall_texture, fragment_uv).r;
+			fragment_colour = vec4(0.0, 0.0, 0.0, 1.0);
 
-			vec2 cursor_uv = vec2((cursor_position.x + 1.0) / 2.0, (cursor_position.y + 1.0) / 2.0);
-			for (int i = 0; i < 1024; i++)
-				if (texture(wall_texture, cursor_uv + ((fragment_uv - cursor_uv) / 1024.0) * float(i)).r > 0.0) {
-					intensity = 0.0;
-					break;
+			for (int i = 0; i < cursor_count; i++) {
+				vec2 cursor_uv = vec2((cursors[i].position.x + 1.0) / 2.0, (cursors[i].position.y + 1.0) / 2.0);
+				bool visible = true;
+				for (int i = 0; i < 1024; i++)
+					if (texture(wall_texture, cursor_uv + ((fragment_uv - cursor_uv) / 1024.0) * float(i)).r > 0.0) {
+						visible = false;
+						break;
+					}
+				if (visible) {
+					float intensity = max(0.0, 0.8 - length(fragment_position - cursors[i].position) * 1.6);
+					fragment_colour = vec4(fragment_colour.rgb + cursors[i].colour * intensity, 1.0);
 				}
+			}
 
-			if (red == 0.0)
-				fragment_colour = vec4(vec3(intensity), 1.0);
-			else
-				fragment_colour = vec4(red, 0.0, 0.0, 1.0);
+			bool in_wall = texture(wall_texture, fragment_uv).r > 0.0;
+			if (in_wall) fragment_colour = vec4(0.3, 0.3, 0.3, 1.0);
 		}
 	`,
 );
@@ -81,7 +94,10 @@ gl.enableVertexAttribArray(1);
 gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 4 * Float32Array.BYTES_PER_ELEMENT, 2 * Float32Array.BYTES_PER_ELEMENT);
 
 const bounds = canvas.getBoundingClientRect();
-document.addEventListener("mousemove", ({ x, y }) => shader.setUniform2fv("cursor_position", new Float32Array([2.0 * (x/bounds.width) - 1.0, 1.0 - (y/bounds.height) * 2])));
+shader.setUniform3fv("cursors[0].colour", new Float32Array([0.0, 1.0, 0.0]));
+shader.setUniform3fv("cursors[1].colour", new Float32Array([0.0, 0.0, 1.0]));
+shader.setUniform1i("cursor_count", 2);
+document.addEventListener("mousemove", ({ x, y }) => shader.setUniform2fv("cursors[0].position", new Float32Array([2.0 * (x/bounds.width) - 1.0, 1.0 - (y/bounds.height) * 2])));
 shader.setUniform1i("wall_texture", 0);
 
 gl.clearColor(0.0, 0.0, 0.0, 1.0);

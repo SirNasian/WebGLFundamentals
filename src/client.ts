@@ -15,14 +15,16 @@ const connection = createConnection(
 	({ id }) => delete _clients[id],
 );
 
+const canvas = document.getElementsByTagName("canvas")[0];
 document.addEventListener("mousemove", ({ x, y }) => {
 	if (!_id) return;
 
+	const bounds = canvas.getBoundingClientRect();
 	_clients[_id] = {
 		id: _id,
 		position: {
-			x: 2.0 * (x/bounds.width) - 1.0,
-			y: 1.0 - (y/bounds.height) * 2,
+			x: 2.0 * ((x - bounds.x)/bounds.width) - 1.0,
+			y: 1.0 - ((y - bounds.y)/bounds.height) * 2,
 		},
 		colour: _colour,
 	};
@@ -33,7 +35,6 @@ document.addEventListener("mousemove", ({ x, y }) => {
 	});
 });
 
-const canvas = document.getElementsByTagName("canvas")[0];
 const gl = (canvas as HTMLCanvasElement).getContext("webgl2");
 gl.viewport(0, 0, canvas.width, canvas.height);
 
@@ -126,7 +127,6 @@ gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 4 * Float32Array.BYTES_PER_ELEMENT
 gl.enableVertexAttribArray(1);
 gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 4 * Float32Array.BYTES_PER_ELEMENT, 2 * Float32Array.BYTES_PER_ELEMENT);
 
-const bounds = canvas.getBoundingClientRect();
 shader.setUniform1i("wall_texture", 0);
 
 gl.clearColor(0.0, 0.0, 0.0, 1.0);

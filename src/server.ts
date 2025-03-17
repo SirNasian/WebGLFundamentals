@@ -8,11 +8,9 @@ import { v4 as uuid } from "uuid";
 
 import { Client, ClientDisconnectMessage, ClientUpdateMessage, InitMessage, Message, SyncStateMessage } from "./common/types";
 
-const HTTP_PORT = Number(process.env.HTTP_PORT ?? 3000);
-const WS_PORT = Number(process.env.WS_PORT ?? 3001);
-console.debug({ HTTP_PORT, WS_PORT });
+const PORT = Number(process.env.WS_PORT ?? 3000);
 
-http.createServer(async (req, res) => {
+const server = http.createServer(async (req, res) => {
 	const urlpath = req.url.split("?")[0];
 	const filepath = path.join(".", "public", urlpath === "/" ? "index.html" : urlpath);
 	const stats = await fs.promises.stat(filepath);
@@ -26,14 +24,12 @@ http.createServer(async (req, res) => {
 	const contentType = mime.contentType(path.extname(filepath)) || 'application/octet-stream';
 	res.setHeader('Content-Type', contentType);
 	fs.createReadStream(filepath).pipe(res);
-}).listen(HTTP_PORT);
+});
 
 const clients: Record<string, Client> = {};
 const sockets: Record<string, WebSocket> = {};
 
-const server = new WebSocketServer({ port: WS_PORT });
-
-server.on("connection", (socket) => {
+new WebSocketServer({ server }).on("connection", (socket) => {
 	const client_id = uuid();
 	{
 		const message: InitMessage = {
@@ -88,3 +84,5 @@ server.on("connection", (socket) => {
 		socket.send(JSON.stringify(message));
 	}, 8);
 });
+
+server.listen(PORT, () => console.debug({ PORT }));
